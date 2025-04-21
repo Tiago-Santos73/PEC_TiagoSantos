@@ -100,12 +100,12 @@ class Inference:
         domain_np = self.domain.detach().cpu().numpy()
         results_np = self.results.detach().cpu().numpy()
 
-        xy = domain_np[:, :2]
+        xy = domain_np[:, :3]
 
         save_data = np.hstack((xy, results_np))
 
-        np.savetxt(f"Resultados{os.path.splitext(self.parameters['nodes file'])[0]}_.txt", save_data, 
-                   header="x y temperatura", fmt="%.6f", comments='')
+        np.savetxt(f"Resultados_{os.path.splitext(self.parameters['nodes file'])[0]}_{self.t.get()}.txt", save_data, 
+                   header="x y tempo temperatura", fmt="%.6f", comments='')
         
         print(self.results)
 
@@ -161,18 +161,7 @@ class Inference:
 
         plotter.show(auto_close=False)  # Keep plot open
             
-            # Then take screenshot
-        #plotter.screenshot("temperature_plot.png")
-
-        #plotter.close()
-            
-            # Close the plotter when done
-        #plotter.close()
-
-        # import os
-        # plot_dir = os.path.join(os.getcwd(), "plots")
-        # os.makedirs(plot_dir, exist_ok=True)
-        # plotter.screenshot(os.path.join(plot_dir, "temperature_plot.png"))
+       
 
         if janela:
             janela.destroy()

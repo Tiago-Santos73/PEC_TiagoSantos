@@ -126,6 +126,16 @@ class SinglePointInference:
         self.load_model()
         self.inference()
 
+        domain_np = self.domain.detach().cpu().numpy()
+        results_np = self.results.detach().cpu().numpy()
+
+        xyt = domain_np[:, :3]
+
+        save_data = np.hstack((xyt, results_np))
+
+        np.savetxt(f"Resultados_{os.path.splitext(self.parameters['nodes file'])[0]}_X_{self.x_coord.get()}_Y_{self.y_coord.get()}.txt", save_data, 
+                   header="x y tempo temperatura", fmt="%.6f", comments='')
+
         self.output.insert(tk.END, "Modelo Avaliado\n")
 
         time = self.domain[:, -2].detach().cpu().numpy().flatten()
