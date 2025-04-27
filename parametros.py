@@ -10,12 +10,12 @@ class ParametrosNN:
         self.output = output
         self.filevar = filevar
         
+        #Initialize Parameters with default values
         self.d_inputs = tk.IntVar(value=4)
         self.d_layers_nnumber = tk.IntVar(value=50)
         self.d_layersnum = tk.IntVar(value=7)
         self.d_outputs = tk.IntVar(value=1)
         self.d_epochs = tk.IntVar(value=20000)
-        
         self.d_lr = tk.StringVar(value="1e-03")
         self.d_domain_samples = tk.IntVar(value=500)
         self.d_Ic = tk.IntVar(value=250)
@@ -26,8 +26,7 @@ class ParametrosNN:
         self.d_alphay = tk.StringVar(value="1.0")
         self.d_adim = tk.StringVar(value="[0.25, 0.50]")
 
-
-    
+    #Save the parameters
     def guardar_parametros(self, janela=None):
 
         ParametrosNN.d['inputs'] = self.d_inputs.get()
@@ -36,31 +35,34 @@ class ParametrosNN:
         ParametrosNN.d['epochs'] = self.d_epochs.get()
         ParametrosNN.d['lr'] = float(self.d_lr.get())
         #ParametrosNN.d['domain samples'] = self.d_domain_samples.get()
-       # ParametrosNN.d['IC samples'] = self.d_Ic.get()
+        #ParametrosNN.d['IC samples'] = self.d_Ic.get()
         #ParametrosNN.d['BC samples'] = self.d_Bc.get()
         ParametrosNN.d['nodes file'] = self.filevar.get()
         ParametrosNN.d['t domain'] = ast.literal_eval(self.d_tdom.get())
         ParametrosNN.d['batch size'] = self.d_batches.get()
-        ParametrosNN.d['alphax'] = float(self.d_alphax.get())
-        ParametrosNN.d['alphay'] = float(self.d_alphay.get())
+        # ParametrosNN.d['alphax'] = float(self.d_alphax.get())
+        # ParametrosNN.d['alphay'] = float(self.d_alphay.get())
         ParametrosNN.d['T0'] = 10
         ParametrosNN.d['adim dom'] = ast.literal_eval(self.d_adim.get())
         
-        
-
+        #Display Output
         self.output.insert(tk.END, "Parametrização guardada!\n")
         
+        #Close Window
         if janela:
             janela.destroy()
 
+
+    #Open Window
     def parametrizar(self):
         parametrizar_janela = tk.Toplevel(self.root)
         parametrizar_janela.title("Parametrizar")
 
-        #label da janela
+        #Window Label
         label_param = tk.Label(parametrizar_janela, text="Parametrização", font=("Helvetica", 14, "bold"))
         label_param.pack(pady=10)
         
+        #Frame
         entry_frame = tk.Frame(parametrizar_janela)
         entry_frame.pack(fill=tk.BOTH, expand=True)
         entry_frame.grid_rowconfigure(0, weight=1)
@@ -87,7 +89,7 @@ class ParametrosNN:
         d_inputs_label = tk.Label(entry_frame, text="Camada de Entrada")
         d_inputs_label.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-        # Frame para os layers
+        # Frame Layers
         layers_frame = tk.Frame(entry_frame)
         layers_frame.grid(row=1, column=0, sticky="ew")
         layers_frame.grid_rowconfigure(0, weight=1)
@@ -157,21 +159,21 @@ class ParametrosNN:
         d_nf_label = tk.Label(entry_frame, text="Ficheiro Nós")
         d_nf_label.grid(row=8, column=1, padx=5, pady=5, sticky="ew")
 
-        #batches
+        #Batches
         d_b_entry = tk.Entry(entry_frame, textvariable=self.d_batches)
         d_b_entry.grid(row=9, column=0, padx=5, pady=5, sticky="ew")
         
         d_b_label = tk.Label(entry_frame, text="Tamanho do Lote")
         d_b_label.grid(row=9, column=1, padx=5, pady=5, sticky="ew")
 
-        #tdomain
+        #Time Domain
         d_t_entry = tk.Entry(entry_frame, textvariable=self.d_tdom)
         d_t_entry.grid(row=10, column=0, padx=5, pady=5, sticky="ew")
         
         d_t_label = tk.Label(entry_frame, text="Domínio Temporal")
         d_t_label.grid(row=10, column=1, padx=5, pady=5, sticky="ew")
 
-        #tdomain
+        #Adimensional DOmain
         d_adim_entry = tk.Entry(entry_frame, textvariable=self.d_adim)
         d_adim_entry.grid(row=11, column=0, padx=5, pady=5, sticky="ew")
         
@@ -193,6 +195,7 @@ class ParametrosNN:
         # d_alphay_label.grid(row=12, column=1, padx=5, pady=5, sticky="ew")
 
 
+        #Save and Close
         btn_fechar = tk.Button(parametrizar_janela, text="Guardar", command=lambda: self.guardar_parametros(parametrizar_janela))
         btn_fechar.pack(pady=5)
 

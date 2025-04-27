@@ -13,22 +13,25 @@ class SinglePointInference:
         self.parameters = params
         self.bc = bc
 
+        # Define the filename of the model
         self.filename = self.parameters['nodes file']
         self.modelfilenamestr = os.path.splitext(self.filename)[0] + "_model.pth"
-
         self.modelfilename = tk.StringVar(value=self.modelfilenamestr)
 
+        # Set the initial temperature from initial conditions
         tvalue = (float(self.ic.ic_values[key]) for key in self.ic.entry_dict)
         self.initial_temperature = tk.DoubleVar(value=(next(tvalue)))
 
-
+        # Initialize variables for x, y coordinates and time
         self.x_coord = tk.DoubleVar()
         self.y_coord = tk.DoubleVar()
         self.time_val = tk.DoubleVar()
 
+        #Initialize max and min temperature
         tmax = float('-inf')
         tmin = float('inf')
 
+        #Loop over Temperatures to get min and max
         for key, var in self.bc.var_dict.items():
             if var.get() != 3:
                 if float(self.bc.entry_values[key]) < tmin:
@@ -45,10 +48,12 @@ class SinglePointInference:
         self.bc_adim = {}
         self.ic_adim = {}
 
+        #Convert BC to adimensional
         for key, var in self.bc.var_dict.items():
             if var.get() != 3:
                 self.bc_adim[key] = ((float(self.bc.entry_values[key])-tmin)/(tmax-tmin)) * (self.parameters['adim dom'][1]-self.parameters['adim dom'][0]) + self.parameters['adim dom'][0]
 
+        #Convert IC to adimensional
         for key in self.ic.ic_values:
             self.ic_adim[key] = ((float(self.ic.ic_values[key])-tmin)/(tmax-tmin)) * (self.parameters['adim dom'][1]-self.parameters['adim dom'][0]) + self.parameters['adim dom'][0]
 
@@ -57,36 +62,40 @@ class SinglePointInference:
         self.model = None  
 
     
+    # Create a single point tensor at a specific time
     def create_domain_at_time(self):
-
+        
+        #Adimensional
         tc_adim = ((float(self.initial_temperature.get())-self.tmin)/(self.tmax-self.tmin)) * (self.parameters['adim dom'][1]-self.parameters['adim dom'][0]) + self.parameters['adim dom'][0]
-
+        
         point = torch.tensor([[self.x_coord.get(), self.y_coord.get(), self.time_val.get(), tc_adim]], dtype=torch.float32)
-
         self.domain = point
 
         print("Mesh domain created!!!")
         print(self.domain)
 
+    # Create multiple points for a single (x, y) location across different times
     def create_domain_across_time(self):
 
+        #Adimensional
         tc_adim = ((float(self.initial_temperature.get())-self.tmin)/(self.tmax-self.tmin)) * (self.parameters['adim dom'][1]-self.parameters['adim dom'][0]) + self.parameters['adim dom'][0]
 
         start_time = float(self.parameters['t domain'][0])
         end_time = float(self.parameters['t domain'][1])
-        num_time_steps = 200  # You can adjust the number of time steps
+        num_time_steps = 200  # Number of time steps for the time evolution
 
+        #equal spaced time points
         time_points = torch.linspace(start_time, end_time, num_time_steps).unsqueeze(1)
 
+        #get coordinates
         x_val = self.x_coord.get()
         y_val = self.y_coord.get()
 
+        #concatenate
         x_tensor = torch.full((num_time_steps, 1), x_val)
         y_tensor = torch.full((num_time_steps, 1), y_val)
         tc_tensor = torch.full((num_time_steps, 1), tc_adim)
-
         points = torch.cat((x_tensor, y_tensor, time_points, tc_tensor), dim=1)
-        
         self.domain = points
         
         print("Mesh domain created!!!")
@@ -104,13 +113,20 @@ class SinglePointInference:
     @torch.no_grad()
     def inference(self):
         # include the time into the domain
+
         self.domain = self.domain.to(torch.float32)
+        
+        #adimensional results
         self.results_adim = self.model(self.domain)
         #torch.set_printoptions(threshold=float('inf'))
         #print(self.results_adim)
+
+        #dimensional results
         self.results = ((self.results_adim - self.parameters['adim dom'][0])/(self.parameters['adim dom'][1]-self.parameters['adim dom'][0])) * (self.tmax - self.tmin) + self.tmin 
         print(self.results)
 
+
+    # Evaluate a single point at a specific time
     def evaluate_single_point(self, janela=None):
         self.create_domain_at_time()
         self.load_model()
@@ -121,32 +137,33 @@ class SinglePointInference:
         if janela:
             janela.destroy()
 
+    # Evaluate temperature evolution across time for a fixed point
     def evaluate_across_time(self, janela):
         self.create_domain_across_time()
         self.load_model()
         self.inference()
 
+
+        # Save results to a .txt file
         domain_np = self.domain.detach().cpu().numpy()
         results_np = self.results.detach().cpu().numpy()
-
         xyt = domain_np[:, :3]
-
         save_data = np.hstack((xyt, results_np))
-
         np.savetxt(f"Resultados_{os.path.splitext(self.parameters['nodes file'])[0]}_X_{self.x_coord.get()}_Y_{self.y_coord.get()}.txt", save_data, 
                    header="x y tempo temperatura", fmt="%.6f", comments='')
 
         self.output.insert(tk.END, "Modelo Avaliado\n")
 
+
+        # Sort results by time for correct plotting
         time = self.domain[:, -2].detach().cpu().numpy().flatten()
         temps = self.results.detach().cpu().numpy().flatten()
 
-        # Ordenar por tempo
         sorted_indices = np.argsort(time)
         time_sorted = time[sorted_indices]
         temps_sorted = temps[sorted_indices]
 
-        # Plot com matplotlib
+        # Plot matplotlib temperature vs. time
         plt.figure(figsize=(8, 5))
         plt.plot(time_sorted, temps_sorted, color="red", linewidth=2)
         plt.title("Evolução da Temperatura ao Longo do Tempo")
@@ -156,10 +173,12 @@ class SinglePointInference:
         plt.tight_layout()
         plt.show()
 
-
+        #close window
         if janela:
             janela.destroy()
 
+
+    # Create a window for user to input evaluation parameters
     def janela(self):
         evaluate_janela = tk.Toplevel(self.root)
         evaluate_janela.title("Avaliar Ponto")
@@ -167,6 +186,7 @@ class SinglePointInference:
         label_eval = tk.Label(evaluate_janela, text="Avaliação", font=("Helvetica", 14, "bold"))
         label_eval.pack(pady=10)
 
+        #frame
         entry_frame = tk.Frame(evaluate_janela)
         entry_frame.pack(fill=tk.BOTH, expand=True)
         entry_frame.grid_rowconfigure(0, weight=1)
@@ -214,14 +234,16 @@ class SinglePointInference:
         time_label = tk.Label(entry_frame, text="Instante de Tempo")
         time_label.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
 
-        # Buttons Frame (closer to time row)
+        # Buttons Frame 
         button_frame = tk.Frame(evaluate_janela)
-        button_frame.pack(pady=5)  # Reduced pady to move closer
+        button_frame.pack(pady=5)  
         button_frame.grid_columnconfigure(0, weight=1)
         button_frame.grid_columnconfigure(1, weight=1)
 
+        # Button evaluate at a single point
         evaluate_btn = tk.Button(button_frame, text="Avaliar Instante de Tempo", command=lambda: self.evaluate_single_point(evaluate_janela))
         evaluate_btn.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
+        # Button evaluate across time
         evaluate_time_across_btn = tk.Button(button_frame, text="Avaliar ao Longo do Tempo", command=lambda: self.evaluate_across_time(evaluate_janela))
         evaluate_time_across_btn.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
