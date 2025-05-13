@@ -109,6 +109,11 @@ class Plate(torch.nn.Module):
         # define the optimizer for the model parameters
         self.adam = torch.optim.Adam(params=self.model.parameters(), lr=self.parameters['lr'])
         #
+
+        ######################
+        #self.scheduler = torch.optim.lr_scheduler.StepLR(self.adam, step_size=8000, gamma=0.5)
+
+
         print("NN Created")
 
     def define_domain(self):
@@ -300,6 +305,10 @@ class Plate(torch.nn.Module):
                 train_loss.backward()
                 # calculate and update the new parameters
                 self.adam.step()
+
+            ##############################
+            #self.scheduler.step()
+
             # record the loss function
             self.train_loss.append(train_loss.item())
             #
@@ -446,7 +455,7 @@ class Plate(torch.nn.Module):
                         setattr(self, train_loss_BC_key, [])
 
                     getattr(self, train_loss_BC_key).append(getattr(self, L_key).item())
-        
+                    
         #***************************************************************
         # filter the domain conditions (all points)
         # create the filtered index for the PDE

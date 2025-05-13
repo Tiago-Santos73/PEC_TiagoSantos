@@ -96,7 +96,7 @@ output.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, pady=5, padx = 5)
 button_frame = tk.Frame(main_frame)
 button_frame.pack(side=tk.RIGHT, anchor='n', padx=5, pady=5)
 
-
+    
 #Parameter
 param_ui = parametros.ParametrosNN(root,output,filevar)
 btn_p = tk.Button(button_frame, text="Parametrizar", command=param_ui.parametrizar)

@@ -187,7 +187,7 @@ class Inference:
 
         # Save the plot image
         plotter.show(auto_close=False, interactive_update=True)
-        plotter.screenshot(f"Temperatura_{self.t.get()}s.png")
+        plotter.screenshot(f"Temperatura_{self.t.get()}.png")
         plotter.show() 
        
         # Close the window

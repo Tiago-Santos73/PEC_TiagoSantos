@@ -40,8 +40,8 @@ class ParametrosNN:
         ParametrosNN.d['nodes file'] = self.filevar.get()
         ParametrosNN.d['t domain'] = ast.literal_eval(self.d_tdom.get())
         ParametrosNN.d['batch size'] = self.d_batches.get()
-        # ParametrosNN.d['alphax'] = float(self.d_alphax.get())
-        # ParametrosNN.d['alphay'] = float(self.d_alphay.get())
+        ParametrosNN.d['alphax'] = float(self.d_alphax.get())
+        ParametrosNN.d['alphay'] = float(self.d_alphay.get())
         ParametrosNN.d['T0'] = 10
         ParametrosNN.d['adim dom'] = ast.literal_eval(self.d_adim.get())
         
